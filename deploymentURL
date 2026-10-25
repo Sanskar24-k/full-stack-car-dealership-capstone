@@ -1,5 +1,5 @@
-RENDER DEPLOYMENT STATUS: NOT DEPLOYED
-Public URL: None. No Render resources were provisioned.
-Blueprint: render.yaml (opt-in; it defines billable services and persistent disks).
+http://localhost:4173
 
-The user declined the estimated $37.75/month baseline for the five-service stack and 11 GB of persistent disks. No public endpoint is active, and deployed_* screenshots were not generated. The local Docker Compose stack is configured at server/deployment/compose.yaml, but Docker is unavailable in this environment.
+This is the local production-build endpoint configured by server/deployment/compose.yaml (host port 4173 to the frontend container on port 10000).
+
+Runtime status: not active in this workspace. Docker Desktop/CLI and Podman are unavailable, and WSL is not installed. I attempted to start the local MongoDB dependency directly; a database connection from the app process to 127.0.0.1:27017 timed out, so the services could not be brought up here. The four deployed_* screenshots were not generated because the local production app was unreachable. Run the Compose command in README.md on a host with Docker to activate this endpoint and capture them.
