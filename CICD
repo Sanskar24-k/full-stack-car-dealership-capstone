@@ -25,3 +25,17 @@ Container/deployment status:
 
 GitHub runner annotations:
 - Current runner warns that actions/checkout@v4, actions/setup-node@v4, and actions/setup-python@v5 are forced onto Node.js 24. All jobs still passed.
+
+Deployment configuration follow-up CI:
+Commit checked: 0fb9cef (Add Render production deployment blueprint)
+GitHub Actions run: https://github.com/Sanskar24-k/full-stack-car-dealership-capstone/actions/runs/40208209995
+Result: SUCCESS
+- Frontend build: PASS
+- Backend checks: PASS (Node syntax, Python dependency install, Django check, Python compileall)
+
+Local re-verification after Render proxy and Django settings changes:
+- Django system check: PASS (no issues)
+- Python compileall: PASS
+- Vite production build: PASS
+- Docker image / Compose runtime: NOT RUN; Docker CLI unavailable.
+- Render provisioning / Blueprint API validation: NOT RUN; Render account is not connected in the browser.
