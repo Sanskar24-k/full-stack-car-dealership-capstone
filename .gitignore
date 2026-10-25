@@ -1,0 +1,10 @@
+# Local dependencies and build output
+node_modules/
+dist/
+
+# Local secrets and runtime data
+.env
+*.sqlite3
+__pycache__/
+*.py[cod]
+/package.json

@@ -1,0 +1,4 @@
+$ curl.exe -sS http://127.0.0.1:40053/analyze/Fantastic%20services
+
+{"score":0.707,"sentiment":"positive","text":"Fantastic services"}
+

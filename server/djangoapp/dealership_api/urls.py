@@ -13,3 +13,6 @@ urlpatterns = [
     path("dealers/<str:dealer_id>", views.dealer_detail, name="dealer-detail"),
     path("analyze/<path:text>", views.analyze_sentiment, name="analyze-sentiment"),
 ]
+
+
+

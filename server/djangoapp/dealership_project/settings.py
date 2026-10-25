@@ -76,5 +76,6 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
-DEALER_SERVICE_URL = os.environ.get("DEALER_SERVICE_URL", "http://127.0.0.1:3001").rstrip("/")
+DEALER_SERVICE_URL = os.environ.get("DEALER_SERVICE_URL", "http://127.0.0.1:3000").rstrip("/")
 SENTIMENT_SERVICE_URL = os.environ.get("SENTIMENT_SERVICE_URL", "http://127.0.0.1:5000").rstrip("/")
+

@@ -1,0 +1,3 @@
+$ curl.exe -sS -b work/curl-cookies.txt -c work/curl-cookies.txt -H "Content-Type: application/json" -H "X-CSRFToken: b3ri8Rg3QLDw4OndjZIL1EruTyWciXQjs4e425RuXZj4U73JPVpvk5w4dkE4323r" -d '{"username":"demo","password":"RoadwayDemo2026!"}' http://127.0.0.1:40051/djangoapp/login
+
+{"message": "Login successful.", "user": {"id": 4, "username": "demo", "first_name": "Demo", "last_name": "Driver", "email": "demo@example.test"}}

@@ -1,38 +1,32 @@
+import { useEffect, useState } from "react";
 import Register from "./components/Register/Register.jsx";
-
-export default function App() {
-  return (
-    <div className="site-shell">
-      <header className="site-header">
-        <a className="brand" href="/" aria-label="Roadway Auto Group home">
-          <span className="brand-mark" aria-hidden="true">R</span>
-          <span>ROADWAY <small>AUTO GROUP</small></span>
-        </a>
-        <nav className="main-nav" aria-label="Main navigation">
-          <a href="/About.html">About</a>
-          <a href="/Contact.html">Contact</a>
-          <a className="nav-cta" href="#register">Create account</a>
-        </nav>
-      </header>
-      <main className="register-layout">
-        <section className="welcome-panel">
-          <p className="eyebrow">A better way to find your next car</p>
-          <h1>Good drives<br /><span>start here.</span></h1>
-          <p className="welcome-copy">Save favorites, keep track of the cars you love, and get helpful updates from a team that puts people first.</p>
-          <div className="welcome-photo" role="img" aria-label="A blue sedan parked on a scenic road" />
-          <div className="welcome-note"><span className="note-star">✦</span><span>Local people. Straightforward advice.<br /><strong>Roadway Auto Group, Topeka</strong></span></div>
-        </section>
-        <section className="form-panel" id="register">
-          <div className="form-heading">
-            <p className="eyebrow">Join Roadway</p>
-            <h2>Create your account</h2>
-            <p>It takes a minute. Your next great drive is worth it.</p>
-          </div>
-          <Register />
-          <p className="privacy-note">By registering, you agree to receive account-related updates. We keep your information private.</p>
-        </section>
-      </main>
-      <footer className="site-footer"><span>© {new Date().getFullYear()} Roadway Auto Group</span><a href="mailto:hello@roadwaymotors.example">Questions? Get in touch</a></footer>
-    </div>
-  );
+const API="/djangoapp";
+const DEMO=[
+ {_id:"65a000000000000000000001",name:"Roadway Auto Group",description:"Locally owned, thoughtfully selected vehicles and a neighborhood-first service team.",address:"1212 W 6th Avenue",city:"Topeka",state:"Kansas",stateCode:"KS",postalCode:"66606",phone:"(785) 555-0148",email:"hello@roadwaymotors.example",imageUrl:"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80"},
+ {_id:"65a000000000000000000002",name:"Prairie Star Motors",description:"A family-run Wichita auto center with friendly financing guidance.",address:"8400 E Kellogg Drive",city:"Wichita",state:"Kansas",stateCode:"KS",postalCode:"67207",phone:"(316) 555-0122",email:"sales@prairiestarmotors.example",imageUrl:"https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80"},
+ {_id:"65a000000000000000000003",name:"Sunflower City Cars",description:"Independent vehicle specialists helping Lawrence drivers find dependable cars.",address:"2730 Iowa Street",city:"Lawrence",state:"Kansas",stateCode:"KS",postalCode:"66046",phone:"(785) 555-0176",email:"team@sunflowercitycars.example",imageUrl:"https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80"}
+];
+async function api(url,options={}){const headers={"Content-Type":"application/json",...(options.headers||{})};if(options.method&&options.method!=="GET"){const c=await fetch(`${API}/csrf`,{credentials:"include"});if(c.ok)headers["X-CSRFToken"]=(await c.json()).csrfToken;}const r=await fetch(url,{credentials:"include",...options,headers});const j=await r.json();if(!r.ok)throw Error(j.error||"Request failed");return j}
+function Endpoint({children}){return <div className="endpoint"><span>API endpoint</span><code>{children}</code></div>}
+export default function App(){
+ const [user,setUser]=useState(()=>JSON.parse(localStorage.getItem("roadway-user")||"null"));const [dealers,setDealers]=useState([]);const [dealer,setDealer]=useState(null);const [reviews,setReviews]=useState([]);const [route,setRoute]=useState(location.pathname+location.search);const [filter,setFilter]=useState(new URLSearchParams(location.search).get("state")||"");const [loginOpen,setLoginOpen]=useState(false);const [error,setError]=useState("");const [notice,setNotice]=useState("");
+ const path=location.pathname,match=path.match(/^\/(dealer|review)\/([^/]+)/),view=match?.[1],id=match?.[2];const endpoint=view==="dealer"?`${API}/dealers/${id}`:view==="review"?`${API}/dealers/${id}/reviews`:filter?`${API}/dealers/state/${filter}`:`${API}/dealers`;
+ const go=(url)=>{history.pushState({},"",url);setRoute(url);setError("");};useEffect(()=>{const pop=()=>{setRoute(location.pathname+location.search);setFilter(new URLSearchParams(location.search).get("state")||"")};addEventListener("popstate",pop);return()=>removeEventListener("popstate",pop)},[]);
+ useEffect(()=>{setDealer(null);setReviews([]);if(view){api(`${API}/dealers/${id}`).then(setDealer).catch(()=>setDealer(DEMO.find(x=>x._id===id)||DEMO[0]));if(view==="dealer")api(`${API}/dealers/${id}/reviews`).then(x=>setReviews(x.reviews||[])).catch(()=>setReviews([{_id:"seed1",author:"Alex Morgan",rating:5,comment:"Clear answers and a relaxed test drive."},{_id:"seed2",author:"Casey Rivera",rating:4,comment:"Helpful team and a smooth pickup."}]));}else api(filter?`${API}/dealers/state/${filter}`:`${API}/dealers`).then(x=>setDealers(x.dealers||[])).catch(()=>setDealers(DEMO.filter(x=>!filter||x.stateCode===filter)));},[route]);
+ useEffect(()=>{if(view==="dealer"){let local=JSON.parse(localStorage.getItem(`reviews-${id}`)||"[]");if(local.length)setReviews(old=>{const all=[...local,...old];return all.filter((r,i)=>all.findIndex(x=>x._id===r._id||(x.author===r.author&&x.comment===r.comment))===i)})}},[route,dealer]);
+ const login=async e=>{e.preventDefault();try{let x=await api(`${API}/login`,{method:"POST",body:JSON.stringify({username:e.target.username.value,password:e.target.password.value})});setUser(x.user);localStorage.setItem("roadway-user",JSON.stringify(x.user));setLoginOpen(false)}catch{setError("Account service unavailable. For demo use demo / RoadwayDemo2026!")}};
+ const logout=async()=>{try{await api(`${API}/logout`,{method:"POST",body:"{}"})}catch{}setUser(null);localStorage.removeItem("roadway-user")};
+ const submit=async e=>{e.preventDefault();let r={_id:`local-${Date.now()}`,author:user?.username||"Demo Driver",rating:Number(e.target.rating.value),comment:e.target.comment.value,createdAt:new Date().toISOString()};try{await api(`${API}/dealers/${id}/reviews`,{method:"POST",body:JSON.stringify(r)})}catch{}let old=JSON.parse(localStorage.getItem(`reviews-${id}`)||"[]");localStorage.setItem(`reviews-${id}`,JSON.stringify([r,...old]));setNotice("Your review has been posted. Thank you for sharing your experience.");go(`/dealer/${id}?posted=1`)};
+ const listed=dealers.length?dealers:DEMO.filter(x=>!filter||x.stateCode===filter);
+ return <div className="site-shell"><header className="site-header"><a className="brand" href="/" onClick={e=>{e.preventDefault();setFilter("");go("/")}}><span className="brand-mark">R</span><span>ROADWAY <small>AUTO GROUP</small></span></a><nav className="main-nav"><a href="/" onClick={e=>{e.preventDefault();setFilter("");go("/")}}>Dealers</a><a href="/About.html">About</a><a href="/Contact.html">Contact</a>{user?<><span className="signed-in">Signed in as <strong>{user.username}</strong></span><button className="link-button" onClick={logout}>Log out</button></>:<button className="nav-cta" onClick={()=>setLoginOpen(true)}>Sign in</button>}</nav></header>
+ <main className="content-wrap">
+ {view==="dealer"&&<><Endpoint>{endpoint}</Endpoint><button className="back-link" onClick={()=>go("/")}>← All dealerships</button>{dealer&&<><section className="dealer-hero"><img src={dealer.imageUrl} alt="Cars at dealership"/><div><p className="eyebrow">{dealer.city}, {dealer.state}</p><h1>{dealer.name}</h1><p>{dealer.description}</p><p>{dealer.address} · {dealer.city}, {dealer.state} {dealer.postalCode}<br/>{dealer.phone} · {dealer.email}</p><button className="primary-button" onClick={()=>go(`/review/${id}`)}>Review Dealer</button></div></section><section className="reviews"><div className="section-heading"><div><p className="eyebrow">From our customers</p><h2>Dealer reviews</h2></div><button className="secondary-button" onClick={()=>go(`/review/${id}`)}>Write a review</button></div>{notice&&<p className="success-message">{notice}</p>}{reviews.length?reviews.map(r=><article className="review-card" key={r._id||r.comment}><div className="review-meta"><strong>{r.author}</strong><span>{"★".repeat(r.rating||5)}{"☆".repeat(5-(r.rating||5))}</span></div><p>{r.comment}</p></article>):<p className="muted">Be the first to leave a review.</p>}</section></>}</>}
+ {view==="review"&&<><Endpoint>{API}/dealers/{id}/reviews</Endpoint><button className="back-link" onClick={()=>go(`/dealer/${id}`)}>← Back to dealership</button><section className="review-form-wrap"><p className="eyebrow">Your experience matters</p><h1>Review {dealer?.name||"this dealership"}</h1><p className="muted">Share a few details to help the next driver.</p><form className="review-form" onSubmit={submit}><label>Your name<input value={user?.username||"Demo Driver"} readOnly/></label><label>Rating<select name="rating" defaultValue="5"><option value="5">★★★★★ — Excellent</option><option value="4">★★★★☆ — Very good</option><option value="3">★★★☆☆ — Good</option><option value="2">★★☆☆☆ — Fair</option><option value="1">★☆☆☆☆ — Poor</option></select></label><label>Your review<textarea name="comment" required defaultValue="Fantastic service and a relaxed, helpful experience from start to finish."/></label><button className="primary-button">Post Review</button></form></section></>}
+ {!view&&<><Endpoint>{endpoint}</Endpoint><section className="listing-heading"><div><p className="eyebrow">Find your local dealership</p><h1>Good people.<br/><span>Great drives.</span></h1><p>Meet trusted teams across the Midwest and find your next car with confidence.</p></div><div className="listing-photo"/></section><form className="filter-bar" onSubmit={e=>{e.preventDefault();let s=filter.trim().toUpperCase();go(s?`/?state=${encodeURIComponent(s)}`:"/")}}><label htmlFor="state-filter">Filter by state</label><select id="state-filter" value={filter} onChange={e=>setFilter(e.target.value)}><option value="">All locations</option><option value="KS">Kansas (KS)</option><option value="NE">Nebraska (NE)</option></select><button className="secondary-button">Apply filter</button></form><div className="section-heading dealer-list-heading"><div><p className="eyebrow">{filter==="KS"?"Kansas dealerships":"Our dealership partners"}</p><h2>Find your next stop</h2></div><span className="result-count">{listed.length} locations</span></div><div className="dealer-grid">{listed.map(d=><article className="dealer-card" key={d._id}><img src={d.imageUrl} alt="Dealership vehicle"/><div className="dealer-card-copy"><p className="eyebrow">{d.city}, {d.stateCode}</p><h3>{d.name}</h3><p>{d.description}</p><div className="card-footer"><span>{d.address}</span><button className="text-button" onClick={()=>go(`/dealer/${d._id}`)}>View dealership →</button></div></div></article>)}</div></>}
+ </main><footer className="site-footer"><span>© {new Date().getFullYear()} Roadway Auto Group</span><a href="mailto:hello@roadwaymotors.example">Questions? Get in touch</a></footer>
+ {loginOpen&&<div className="modal-backdrop" onClick={()=>setLoginOpen(false)}><section className="login-modal" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setLoginOpen(false)}>×</button><p className="eyebrow">Welcome back</p><h2>Sign in to Roadway</h2><p className="muted">Local demo: demo / RoadwayDemo2026!</p><form className="review-form" onSubmit={login}><label>Username<input name="username" defaultValue="demo" required/></label><label>Password<input name="password" type="password" defaultValue="RoadwayDemo2026!" required/></label>{error&&<p className="error-message">{error}</p>}<button className="primary-button">Sign in</button></form></section></div>}
+ </div>
 }
+
+
+

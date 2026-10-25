@@ -30,7 +30,7 @@ const sampleDealers = [
     phone: "(316) 555-0122",
     email: "sales@prairiestarmotors.example",
     website: "https://prairiestarmotors.example",
-    imageUrl: "https://images.unsplash.com/photo-1562519819-016930ada31b?auto=format&fit=crop&w=1200&q=80",
+    imageUrl: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
   },
   {
     name: "Sunflower City Cars",
@@ -86,3 +86,4 @@ try {
 } finally {
   await mongoose.disconnect();
 }
+

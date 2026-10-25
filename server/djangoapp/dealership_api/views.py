@@ -196,15 +196,36 @@ def dealers_by_state(_request, state):
     return proxy_get(settings.DEALER_SERVICE_URL, f"/dealers/state/{quote(state, safe='')}")
 
 
-@require_GET
-def dealer_reviews(_request, dealer_id):
-    return proxy_get(
-        settings.DEALER_SERVICE_URL,
-        f"/dealers/{quote(dealer_id, safe='')}/reviews",
+@require_http_methods(["GET", "POST"])
+def dealer_reviews(request, dealer_id):
+    path = f"/dealers/{quote(dealer_id, safe='')}/reviews"
+    if request.method == "GET":
+        return proxy_get(settings.DEALER_SERVICE_URL, path)
+    data, error = request_data(request)
+    if error:
+        return error
+    upstream = Request(
+        f"{settings.DEALER_SERVICE_URL}{path}",
+        data=json.dumps(data).encode("utf-8"),
+        headers={"Accept": "application/json", "Content-Type": "application/json"},
+        method="POST",
     )
+    try:
+        with urlopen(upstream, timeout=5) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+            return JsonResponse(payload, status=response.status)
+    except HTTPError as exc:
+        try:
+            payload = json.loads(exc.read().decode("utf-8"))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            payload = {"error": "Upstream service returned an error."}
+        return JsonResponse(payload, status=exc.code)
+    except (URLError, TimeoutError) as exc:
+        return JsonResponse({"error": "Upstream service is unavailable.", "detail": str(exc)}, status=502)
 
 
 @require_GET
 def analyze_sentiment(_request, text):
     encoded_text = quote(text, safe="")
     return proxy_get(settings.SENTIMENT_SERVICE_URL, f"/analyze/{encoded_text}")
+

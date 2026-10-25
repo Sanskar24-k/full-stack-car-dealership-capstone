@@ -1,0 +1,8 @@
+Django terminal output for http://127.0.0.1:40051
+
+[25/Oct/2026 20:33:00] "GET /djangoapp/get_cars HTTP/1.1" 200 2345
+[25/Oct/2026 20:33:01] "GET /djangoapp/csrf HTTP/1.1" 200 81
+[25/Oct/2026 20:33:01] "POST /djangoapp/login HTTP/1.1" 200 146
+[25/Oct/2026 20:33:01] "GET /djangoapp/csrf HTTP/1.1" 200 81
+[25/Oct/2026 20:33:01] "POST /djangoapp/logout HTTP/1.1" 200 33
+[25/Oct/2026 20:33:02] "GET /djangoapp/get_cars HTTP/1.1" 200 2345

@@ -1,0 +1,3 @@
+$ curl.exe -sS -b work/curl-cookies.txt -c work/curl-cookies.txt -H "Content-Type: application/json" -H "X-CSRFToken: lUV3g9l1hn9BABwsV7zjkYgiv8Lmab6fu9PISubTl5ItwW38Iwd6fezMeHWJBrHq" -d '{}' http://127.0.0.1:40051/djangoapp/logout
+
+{"message": "Logout successful."}

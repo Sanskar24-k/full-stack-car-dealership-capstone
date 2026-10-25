@@ -1,17 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-
+const djangoTarget = process.env.DJANGO_SERVICE_URL || "http://127.0.0.1:8000";
 export default defineConfig({
   plugins: [react()],
-  publicDir: "static",
   resolve: { preserveSymlinks: true },
   server: {
-    port: 5173,
-    proxy: {
-      "/djangoapp": {
-        target: process.env.DJANGO_PROXY_TARGET || "http://127.0.0.1:8000",
-        changeOrigin: true,
-      },
-    },
+    proxy: { "/djangoapp": { target: djangoTarget, changeOrigin: true } },
   },
 });
