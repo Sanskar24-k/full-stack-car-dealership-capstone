@@ -76,28 +76,27 @@ export default function Register() {
       <div className="register-name-row">
         <label>
           First name
-          <input autoComplete="given-name" name="first_name" value={values.first_name} onChange={handleChange} required />
+          <input autoComplete="given-name" name="first_name" placeholder="First Name" value={values.first_name} onChange={handleChange} required />
         </label>
         <label>
           Last name
-          <input autoComplete="family-name" name="last_name" value={values.last_name} onChange={handleChange} required />
+          <input autoComplete="family-name" name="last_name" placeholder="Last Name" value={values.last_name} onChange={handleChange} required />
         </label>
       </div>
       <label>
         Username
-        <input autoComplete="username" name="username" value={values.username} onChange={handleChange} minLength={3} maxLength={150} required />
+        <input autoComplete="username" name="username" placeholder="Username" value={values.username} onChange={handleChange} minLength={3} maxLength={150} required />
       </label>
       <label>
         Email address
-        <input autoComplete="email" type="email" name="email" value={values.email} onChange={handleChange} required />
+        <input autoComplete="email" type="email" name="email" placeholder="email" value={values.email} onChange={handleChange} required />
       </label>
       <label>
         Password
-        <input autoComplete="new-password" type="password" name="password" value={values.password} onChange={handleChange} minLength={8} required />
+        <input autoComplete="new-password" type="password" name="password" placeholder="Password" value={values.password} onChange={handleChange} minLength={8} required />
       </label>
       <button type="submit" disabled={status.kind === "loading"}>
-        {status.kind === "loading" ? "Please wait…" : "Create account"}
-        <span aria-hidden="true">→</span>
+        Register
       </button>
       <p className={`register-status ${status.kind}`} role="status" aria-live="polite">{status.message}</p>
     </form>

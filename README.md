@@ -1,4 +1,6 @@
-# Full-Stack Car Dealership Capstone
+# xrwvm-fullstack_developer_capstone
+
+IBM Full-Stack Developer Capstone project.
 
 A full-stack dealership application organized as a React client, a Django API, an Express/MongoDB dealer directory, and a Flask sentiment service. The frontend sends application requests to Django; Django owns account sessions and the car catalog, and proxies dealership and sentiment requests to their focused services.
 
@@ -13,7 +15,7 @@ Browser ── React/Vite ── Django API
 
 - **React/Vite (`server/frontend/`)** provides the account registration UI. The `static/` directory is also Vite's public directory and serves the standalone About and Contact pages at `/About.html` and `/Contact.html`.
 - **Django (`server/djangoapp/`)** handles user registration, session login/logout, and car make/model data stored in SQLite. It proxies dealer requests to Express and text analysis requests to Flask.
-- **Express/MongoDB (`server/database/`)** stores dealership profiles and reviews and exposes list, detail, state, and review endpoints. A repeatable seed script provides sample Kansas and Nebraska dealers.
+- **Express/MongoDB (`server/database/`)** stores dealership profiles and reviews and exposes list, detail, state, and review endpoints. The repeatable seed script loads all 50 dealership records from the IBM capstone seed JSON file, including Kansas locations.
 - **Flask (`server/djangoapp/microservices/sentiment/`)** classifies short text as positive, neutral, or negative and returns a normalized score.
 
 ## Project layout
@@ -22,6 +24,7 @@ Browser ── React/Vite ── Django API
 server/
 ├── database/                         # Express + Mongoose dealer directory
 │   ├── compose.yaml                  # Local MongoDB container
+│   ├── data/dealerships.json         # 50-record IBM capstone source dataset
 │   └── src/
 ├── djangoapp/                        # Django project and API
 │   ├── dealership_api/               # Models, views, migration, seed command
@@ -52,7 +55,7 @@ npm run seed
 npm run dev
 ```
 
-The dealer API listens at `http://localhost:3000`. `npm run seed` is safe to repeat and adds three sample Kansas dealers, one Nebraska dealer, and two sample reviews.
+The dealer API listens at `http://localhost:3000`. `npm run seed` safely upserts all 50 records from `data/dealerships.json` and adds three sample reviews for the Kansas record.
 
 ### 2. Start Django
 
@@ -101,7 +104,7 @@ Open the Vite URL printed in the terminal (normally `http://localhost:5173`). St
 | `POST` | `/djangoapp/register` | Create an account from `username`, `first_name`, `last_name`, `email`, and `password`; establishes a session |
 | `POST` | `/djangoapp/login` | Start a session with username (or email) and password |
 | `POST` | `/djangoapp/logout` | End the current session |
-| `GET` | `/djangoapp/get_cars` | Return makes and their model details |
+| `GET` | `/djangoapp/get_cars` | Return `{"CarModels":[{"CarModel":"Corolla","CarMake":"Toyota"}]}` |
 | `GET` | `/djangoapp/dealers` | Proxy all dealers from Express |
 | `GET` | `/djangoapp/dealers/{id}` | Proxy one dealer |
 | `GET` | `/djangoapp/dealers/state/{state}` | Proxy dealers by state, including `KS` or `Kansas` |
@@ -113,7 +116,8 @@ Open the Vite URL printed in the terminal (normally `http://localhost:5173`). St
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/health` | Service health |
-| `GET` | `/dealers` | List dealers |
+| `GET` | `/dealers` | List all 50 seed dealers |
+| `GET` | `/fetchDealers` | IBM rubric alias for the complete seed dealer list |
 | `GET` | `/dealers/state/KS` | List Kansas dealers (`Kansas` is accepted too) |
 | `GET` | `/dealers/{id}` | Dealer details by MongoDB ObjectId |
 | `GET` | `/dealers/{id}/reviews` | Reviews for a dealer |

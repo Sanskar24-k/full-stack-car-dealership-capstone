@@ -1,3 +1,4 @@
+name: xrwvm-fullstack_developer_capstone
 services:
   mongo:
     image: mongo:7.0
