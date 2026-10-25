@@ -1,38 +1,27 @@
-Car Dealership CI - local verification log
+Car Dealership CI - execution log
 Date: 2026-10-25
-Workflow definition: .github/workflows/main.yml
-Configured trigger: push or pull request targeting master
+Workflow: .github/workflows/main.yml
+Trigger: push to master
+Commit checked: 6065dc234aec3fc08033c7a3b959dc8b867bbf9e
+GitHub Actions run: https://github.com/Sanskar24-k/full-stack-car-dealership-capstone/actions/runs/40207650665
+Result: SUCCESS
 
-[PASS] Frontend production build
-Command: npm run build
-Working directory: server/frontend
-Output:
-vite v5.4.21 building for production...
-33 modules transformed.
-dist/index.html and bundled CSS/JS emitted successfully.
-�w^~)�w built in 509ms
+Hosted jobs:
+- Frontend build: PASS (npm ci; npm run build)
+- Backend checks: PASS (npm ci; Node syntax checks; Python dependency install; Django manage.py check; Python compileall)
 
-[PASS] Express source syntax
-Commands: node --check src/server.js; node --check src/app.js; node --check src/seed.js; node --check src/routes/dealers.js
-Working directory: server/database
-Output: Express syntax checks passed.
+Local checks performed before push:
+- Frontend production build: PASS
+- Express JavaScript syntax checks: PASS
+- Django system check: PASS (no issues)
+- Python compileall: PASS
+- Sentiment smoke check for "Fantastic services": PASS (positive, score 0.707)
 
-[PASS] Django configuration
-Command: .venv/Scripts/python.exe manage.py check
-Working directory: server/djangoapp
-Output: System check identified no issues (0 silenced).
+Container/deployment status:
+- Docker Compose build/runtime: NOT RUN; Docker CLI is not installed in this environment.
+- Public deployment: NOT CONFIGURED; no hosting target or deployment credentials are available.
+- Deployment screenshots: NOT GENERATED; a live public application is not available to capture.
+- The container deployment setup is in server/deployment/compose.yaml.
 
-[PASS] Python compilation
-Command: .venv/Scripts/python.exe -m compileall -q dealership_api dealership_project microservices/sentiment
-Output: Python compileall passed.
-
-[PASS] Sentiment analyzer smoke check
-Command: python -c "from app import analyze_text; print(analyze_text('Fantastic services'))"
-Working directory: server/djangoapp/microservices/sentiment
-Output: {'text': 'Fantastic services', 'sentiment': 'positive', 'score': 0.707}
-
-[NOT RUN] Docker Compose container build/runtime
-Reason: Docker CLI is not installed in this execution environment.
-
-[NOT RUN] GitHub Actions hosted run
-Reason: Workflow changes have not yet been pushed to master.
+GitHub runner annotations:
+- Current runner warns that actions/checkout@v4, actions/setup-node@v4, and actions/setup-python@v5 are forced onto Node.js 24. All jobs still passed.
