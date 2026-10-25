@@ -1,5 +1,5 @@
 RENDER DEPLOYMENT STATUS: NOT DEPLOYED
-Public URL: Not assigned; the Render Blueprint has not been provisioned.
-Blueprint: render.yaml
+Public URL: None. No Render resources were provisioned.
+Blueprint: render.yaml (opt-in; it defines billable services and persistent disks).
 
-Creating the configured production stack requires a Render account sign-in and approval of billable resources. The current configuration uses five 0.5 CPU / 512 MB services ($7 each per month) and 11 GB of persistent disks ($0.25 per GB per month), for an estimated base of $37.75 per month, plus any applicable usage charges. No deployed screenshots can be captured until the services are live.
+The user declined the estimated $37.75/month baseline for the five-service stack and 11 GB of persistent disks. No public endpoint is active, and deployed_* screenshots were not generated. The local Docker Compose stack is configured at server/deployment/compose.yaml, but Docker is unavailable in this environment.
