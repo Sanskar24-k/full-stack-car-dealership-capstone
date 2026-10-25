@@ -1,47 +1,128 @@
 # Full-Stack Car Dealership Capstone
 
-A starter workspace for a full-stack car dealership application. The project is organized as a web client, a Django application/API, a database area for schema and seed assets, and focused microservices for dealership workflows.
+A full-stack dealership application organized as a React client, a Django API, an Express/MongoDB dealer directory, and a Flask sentiment service. The frontend sends application requests to Django; Django owns account sessions and the car catalog, and proxies dealership and sentiment requests to their focused services.
 
 ## Architecture
 
 ```text
-Browser
-  │ HTTPS / JSON API
-  ▼
-server/frontend/ ───────► server/djangoapp/ ───────► server/database/
-                                  │
-                                  └──► server/djangoapp/microservices/
+                           ┌── Express API ── MongoDB
+Browser ── React/Vite ── Django API
+                           └── Flask sentiment analyzer
+                            SQLite: users, makes, models
 ```
 
-- **Frontend (`server/frontend/`)** — the browser-facing user experience. It will host inventory browsing and search, vehicle detail pages, customer accounts, favorites, and dealership/admin screens. The frontend calls the Django API over HTTP and should keep presentation concerns separate from business rules.
-- **Django application (`server/djangoapp/`)** — the backend entry point and API. It will own request validation, authentication and permissions, domain models, orchestration, and API serialization. Django apps and shared backend configuration belong here as the implementation grows.
-- **Microservices (`server/djangoapp/microservices/`)** — bounded service modules for dealership capabilities such as inventory, pricing, orders, customer records, or notifications. Start with clear internal interfaces; deploy a component independently only when its scale or operational needs justify it.
-- **Database (`server/database/`)** — database-related project assets such as schema notes, migrations support, seed/import data, and local development documentation. The running application should access persistent data through Django's data layer rather than having the frontend connect directly to the database.
+- **React/Vite (`server/frontend/`)** provides the account registration UI. The `static/` directory is also Vite's public directory and serves the standalone About and Contact pages at `/About.html` and `/Contact.html`.
+- **Django (`server/djangoapp/`)** handles user registration, session login/logout, and car make/model data stored in SQLite. It proxies dealer requests to Express and text analysis requests to Flask.
+- **Express/MongoDB (`server/database/`)** stores dealership profiles and reviews and exposes list, detail, state, and review endpoints. A repeatable seed script provides sample Kansas and Nebraska dealers.
+- **Flask (`server/djangoapp/microservices/sentiment/`)** classifies short text as positive, neutral, or negative and returns a normalized score.
 
-The intended request path is: a user interacts with the frontend, the frontend sends an authenticated API request to Django, Django applies domain rules and delegates to the relevant service module, and the data layer reads or writes the database. Responses return through the API to the frontend. Keep secrets and database credentials in environment variables; never commit them.
-
-## Initial layout
+## Project layout
 
 ```text
-.
-├── README.md
-└── server/
-    ├── frontend/
-    ├── djangoapp/
-    │   └── microservices/
-    └── database/
+server/
+├── database/                         # Express + Mongoose dealer directory
+│   ├── compose.yaml                  # Local MongoDB container
+│   └── src/
+├── djangoapp/                        # Django project and API
+│   ├── dealership_api/               # Models, views, migration, seed command
+│   └── microservices/sentiment/      # Flask analyzer
+└── frontend/                         # React/Vite UI and static pages
+    ├── src/components/Register/
+    └── static/
 ```
 
-Each directory currently contains a `.gitkeep` file so the scaffold is present in Git. Add implementation-specific documentation and configuration alongside the component they describe.
+## Requirements
 
-## Development plan
+- Node.js 18 or newer and npm
+- Python 3.10 or newer and pip
+- Docker Desktop (for the local MongoDB container), or another MongoDB server
 
-1. Choose and document frontend and backend versions and local prerequisites.
-2. Add the frontend app under `server/frontend/` and the Django project/API under `server/djangoapp/`.
-3. Define the initial dealership data model (for example vehicles, dealerships, customers, and inquiries), then create migrations and seed data.
-4. Add API endpoints and tests for inventory search, vehicle details, and customer inquiry flows.
-5. Configure local environment variables from a checked-in example file, and document how to run each component.
+## Local development
 
-## Local setup
+Run each component in its own terminal from the indicated directory.
 
-This repository starts as a structure-only scaffold. Runtime commands will be added after the frontend framework, database engine, and service boundaries are selected. Do not put credentials in source control.
+### 1. Start MongoDB and the Express service
+
+```powershell
+cd server/database
+Copy-Item .env.example .env
+docker compose up -d mongo
+npm install
+npm run seed
+npm run dev
+```
+
+The dealer API listens at `http://localhost:3001`. `npm run seed` is safe to repeat and adds three sample Kansas dealers, one Nebraska dealer, and two sample reviews.
+
+### 2. Start Django
+
+```powershell
+cd server/djangoapp
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+python manage.py migrate
+python manage.py seed_cars
+python manage.py runserver 8000
+```
+
+Django uses SQLite locally. The Vite development server proxies `/djangoapp/*` to Django, including the CSRF cookie endpoint used by registration.
+
+### 3. Start the Flask analyzer
+
+```powershell
+cd server/djangoapp/microservices/sentiment
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python app.py
+```
+
+The analyzer listens at `http://localhost:5000`.
+
+### 4. Start the React app
+
+```powershell
+cd server/frontend
+npm install
+npm run dev
+```
+
+Open the Vite URL printed in the terminal (normally `http://localhost:5173`). Static pages are available at `/About.html` and `/Contact.html`.
+
+## API routes
+
+### Django (`http://localhost:8000`)
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/djangoapp/csrf` | Set and return the CSRF cookie/token for browser clients |
+| `POST` | `/djangoapp/register` | Create an account from `username`, `first_name`, `last_name`, `email`, and `password`; establishes a session |
+| `POST` | `/djangoapp/login` | Start a session with username (or email) and password |
+| `POST` | `/djangoapp/logout` | End the current session |
+| `GET` | `/djangoapp/get_cars` | Return makes and their model details |
+| `GET` | `/djangoapp/dealers` | Proxy all dealers from Express |
+| `GET` | `/djangoapp/dealers/{id}` | Proxy one dealer |
+| `GET` | `/djangoapp/dealers/state/{state}` | Proxy dealers by state, including `KS` or `Kansas` |
+| `GET` | `/djangoapp/dealers/{id}/reviews` | Proxy reviews for a dealer |
+| `GET` | `/djangoapp/analyze/{text}` | Proxy sentiment analysis to Flask; URL-encode text when calling directly |
+
+### Express (`http://localhost:3001`)
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/health` | Service health |
+| `GET` | `/dealers` | List dealers |
+| `GET` | `/dealers/state/KS` | List Kansas dealers (`Kansas` is accepted too) |
+| `GET` | `/dealers/{id}` | Dealer details by MongoDB ObjectId |
+| `GET` | `/dealers/{id}/reviews` | Reviews for a dealer |
+
+### Flask (`http://localhost:5000`)
+
+- `GET /health`
+- `GET /analyze/{text}` returns `{ "text": "...", "sentiment": "positive|neutral|negative", "score": 0.0 }`.
+
+## Configuration
+
+Copy each service's `.env.example` to `.env` for local overrides. Do not commit secrets. Django defaults to `127.0.0.1:3001` for Express and `127.0.0.1:5000` for Flask; override `DEALER_SERVICE_URL` and `SENTIMENT_SERVICE_URL` when those services run elsewhere. The Express service reads `MONGODB_URI`, `PORT`, and `FRONTEND_ORIGIN`.

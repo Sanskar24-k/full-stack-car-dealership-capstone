@@ -1,0 +1,13 @@
+.register-form { display: grid; gap: 16px; }
+.register-form label { display: grid; gap: 7px; color: #334055; font-size: 12px; font-weight: 700; }
+.register-form input { width: 100%; height: 45px; padding: 0 13px; border: 1px solid #dce2eb; border-radius: 8px; outline: none; background: #fff; color: #142033; font: 500 14px "DM Sans", sans-serif; transition: border-color .15s, box-shadow .15s; }
+.register-form input:focus { border-color: #d95536; box-shadow: 0 0 0 3px rgba(217, 85, 54, .12); }
+.register-name-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.register-form button { height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border: 0; border-radius: 8px; background: #142033; color: white; font: 700 14px "DM Sans", sans-serif; cursor: pointer; transition: background .15s, transform .15s; }
+.register-form button:hover:not(:disabled) { background: #253958; transform: translateY(-1px); }
+.register-form button:disabled { opacity: .65; cursor: wait; }
+.register-form button span { font-size: 20px; }
+.register-status { min-height: 18px; margin: -4px 0 0; font-size: 12px; line-height: 1.5; }
+.register-status.success { color: #237a55; }
+.register-status.error { color: #b9382b; }
+@media (max-width: 460px) { .register-name-row { grid-template-columns: 1fr; } }
