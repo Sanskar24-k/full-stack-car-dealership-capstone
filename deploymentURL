@@ -1,0 +1,3 @@
+No active public deployment URL is available yet.
+
+The production Docker Compose stack is configured in server/deployment/compose.yaml. This execution environment has no Docker CLI and blocks connections to locally started service ports, so it cannot run the stack or expose it for browser screenshots. A cloud deployment requires an authorized hosting target and its deployment credentials.

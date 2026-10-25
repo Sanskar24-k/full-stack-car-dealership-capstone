@@ -1,0 +1,71 @@
+services:
+  mongo:
+    image: mongo:7.0
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+
+  dealers:
+    build:
+      context: ../database
+    restart: unless-stopped
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/car_dealership
+      PORT: "3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  sentiment:
+    build:
+      context: ../djangoapp/microservices/sentiment
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from urllib.request import urlopen; urlopen('http://127.0.0.1:5000/health', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  django:
+    build:
+      context: ../djangoapp
+    restart: unless-stopped
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in the environment}
+      DJANGO_DEBUG: "false"
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost:4173,http://127.0.0.1:4173}
+      DJANGO_DATABASE_PATH: /app/data/db.sqlite3
+      DJANGO_STATIC_ROOT: /app/static-collected
+      DEALER_SERVICE_URL: http://dealers:3000
+      SENTIMENT_SERVICE_URL: http://sentiment:5000
+    volumes:
+      - django-data:/app/data
+    depends_on:
+      dealers:
+        condition: service_healthy
+      sentiment:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../frontend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-4173}:80"
+    depends_on:
+      - django
+
+volumes:
+  mongo-data:
+  django-data:

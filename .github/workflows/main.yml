@@ -1,0 +1,60 @@
+name: Car Dealership CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/frontend/package-lock.json
+      - run: npm ci
+        working-directory: server/frontend
+      - run: npm run build
+        working-directory: server/frontend
+
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: server/database/package-lock.json
+      - run: npm ci
+        working-directory: server/database
+      - name: Check Express JavaScript syntax
+        run: |
+          node --check src/server.js
+          node --check src/app.js
+          node --check src/seed.js
+          node --check src/routes/dealers.js
+        working-directory: server/database
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            server/djangoapp/requirements.txt
+            server/djangoapp/microservices/sentiment/requirements.txt
+      - name: Install Python dependencies
+        run: python -m pip install -r server/djangoapp/requirements.txt -r server/djangoapp/microservices/sentiment/requirements.txt
+      - name: Check Django configuration
+        run: python manage.py check
+        working-directory: server/djangoapp
+      - name: Compile Python services
+        run: python -m compileall -q server/djangoapp/dealership_api server/djangoapp/dealership_project server/djangoapp/microservices/sentiment

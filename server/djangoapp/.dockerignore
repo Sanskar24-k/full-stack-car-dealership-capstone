@@ -1,0 +1,7 @@
+.venv
+.packages
+.env
+*.sqlite3
+__pycache__
+*.py[cod]
+static-collected

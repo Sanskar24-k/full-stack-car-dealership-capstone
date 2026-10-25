@@ -52,7 +52,7 @@ npm run seed
 npm run dev
 ```
 
-The dealer API listens at `http://localhost:3001`. `npm run seed` is safe to repeat and adds three sample Kansas dealers, one Nebraska dealer, and two sample reviews.
+The dealer API listens at `http://localhost:3000`. `npm run seed` is safe to repeat and adds three sample Kansas dealers, one Nebraska dealer, and two sample reviews.
 
 ### 2. Start Django
 
@@ -108,7 +108,7 @@ Open the Vite URL printed in the terminal (normally `http://localhost:5173`). St
 | `GET` | `/djangoapp/dealers/{id}/reviews` | Proxy reviews for a dealer |
 | `GET` | `/djangoapp/analyze/{text}` | Proxy sentiment analysis to Flask; URL-encode text when calling directly |
 
-### Express (`http://localhost:3001`)
+### Express (`http://localhost:3000`)
 
 | Method | Path | Purpose |
 | --- | --- | --- |
@@ -125,4 +125,16 @@ Open the Vite URL printed in the terminal (normally `http://localhost:5173`). St
 
 ## Configuration
 
-Copy each service's `.env.example` to `.env` for local overrides. Do not commit secrets. Django defaults to `127.0.0.1:3001` for Express and `127.0.0.1:5000` for Flask; override `DEALER_SERVICE_URL` and `SENTIMENT_SERVICE_URL` when those services run elsewhere. The Express service reads `MONGODB_URI`, `PORT`, and `FRONTEND_ORIGIN`.
+Copy each service's `.env.example` to `.env` for local overrides. Do not commit secrets. Django defaults to `127.0.0.1:3000` for Express and `127.0.0.1:5000` for Flask; override `DEALER_SERVICE_URL` and `SENTIMENT_SERVICE_URL` when those services run elsewhere. The Express service reads `MONGODB_URI`, `PORT`, and `FRONTEND_ORIGIN`.
+
+## Production container deployment
+
+The multi-container production stack is defined in `server/deployment/compose.yaml`. It serves the built React application through Nginx, runs Django with Gunicorn and WhiteNoise, and starts Express, Flask, and MongoDB. `mongo-data` and `django-data` are named persistent volumes.
+
+```powershell
+Copy-Item server/deployment/.env.example server/deployment/.env
+# Edit server/deployment/.env and set a unique DJANGO_SECRET_KEY and the public host/origin values.
+docker compose --env-file server/deployment/.env -f server/deployment/compose.yaml up --build -d
+```
+
+Open the port configured in `PORT` (4173 by default). Stop the stack with `docker compose --env-file server/deployment/.env -f server/deployment/compose.yaml down`; add `-v` only when intentionally discarding the persistent data volumes.
