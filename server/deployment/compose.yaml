@@ -62,7 +62,9 @@ services:
       context: ../frontend
     restart: unless-stopped
     ports:
-      - "${PORT:-4173}:80"
+      - "${PORT:-4173}:10000"
+    environment:
+      DJANGO_HOSTPORT: django:8000
     depends_on:
       - django
 

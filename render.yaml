@@ -1,0 +1,86 @@
+services:
+  - type: pserv
+    name: car-dealership-mongo
+    runtime: docker
+    region: ohio
+    plan: 0.5c-512mb
+    dockerContext: server/database
+    dockerfilePath: server/database/mongo.Dockerfile
+    disk:
+      name: car-dealership-mongo-data
+      mountPath: /data/db
+      sizeGB: 10
+  - type: pserv
+    name: car-dealership-dealers
+    runtime: docker
+    region: ohio
+    plan: 0.5c-512mb
+    dockerContext: server/database
+    dockerfilePath: server/database/Dockerfile
+    envVars:
+      - key: MONGODB_HOSTPORT
+        fromService:
+          name: car-dealership-mongo
+          type: pserv
+          property: hostport
+      - key: PORT
+        value: "3000"
+  - type: pserv
+    name: car-dealership-sentiment
+    runtime: docker
+    region: ohio
+    plan: 0.5c-512mb
+    dockerContext: server/djangoapp/microservices/sentiment
+    dockerfilePath: server/djangoapp/microservices/sentiment/Dockerfile
+  - type: pserv
+    name: car-dealership-django
+    runtime: docker
+    region: ohio
+    plan: 0.5c-512mb
+    dockerContext: server/djangoapp
+    dockerfilePath: server/djangoapp/Dockerfile
+    disk:
+      name: car-dealership-django-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DJANGO_SECURE_COOKIES
+        value: "true"
+      - key: DJANGO_ALLOWED_HOSTS
+        value: "*"
+      - key: DJANGO_CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: DJANGO_DATABASE_PATH
+        value: /app/data/db.sqlite3
+      - key: DJANGO_STATIC_ROOT
+        value: /app/static-collected
+      - key: DEALER_SERVICE_HOSTPORT
+        fromService:
+          name: car-dealership-dealers
+          type: pserv
+          property: hostport
+      - key: SENTIMENT_SERVICE_HOSTPORT
+        fromService:
+          name: car-dealership-sentiment
+          type: pserv
+          property: hostport
+  - type: web
+    name: car-dealership-frontend
+    runtime: docker
+    region: ohio
+    plan: 0.5c-512mb
+    dockerContext: server/frontend
+    dockerfilePath: server/frontend/Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: DJANGO_HOSTPORT
+        fromService:
+          name: car-dealership-django
+          type: pserv
+          property: hostport
+
+

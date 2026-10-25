@@ -138,3 +138,7 @@ docker compose --env-file server/deployment/.env -f server/deployment/compose.ya
 ```
 
 Open the port configured in `PORT` (4173 by default). Stop the stack with `docker compose --env-file server/deployment/.env -f server/deployment/compose.yaml down`; add `-v` only when intentionally discarding the persistent data volumes.
+
+### Render deployment
+
+The root `render.yaml` Blueprint defines the production web frontend, Django API, Express dealer API, Flask sentiment service, and MongoDB. The Django SQLite database and MongoDB data use persistent disks. In Render, connect this GitHub repository and create a Blueprint from `render.yaml`; the selected service plans and disks are paid Render resources. Render-generated service hostnames and the Django secret are wired through Blueprint references.

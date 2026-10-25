@@ -78,5 +78,20 @@ CSRF_TRUSTED_ORIGINS = [
     if origin.strip()
 ]
 
-DEALER_SERVICE_URL = os.environ.get("DEALER_SERVICE_URL", "http://127.0.0.1:3000").rstrip("/")
-SENTIMENT_SERVICE_URL = os.environ.get("SENTIMENT_SERVICE_URL", "http://127.0.0.1:5000").rstrip("/")
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+if os.environ.get("DJANGO_SECURE_COOKIES", "false").lower() in {"1", "true", "yes"}:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+
+DEALER_SERVICE_URL = os.environ.get("DEALER_SERVICE_URL")
+if not DEALER_SERVICE_URL:
+    dealer_hostport = os.environ.get("DEALER_SERVICE_HOSTPORT", "127.0.0.1:3000")
+    DEALER_SERVICE_URL = f"http://{dealer_hostport}"
+DEALER_SERVICE_URL = DEALER_SERVICE_URL.rstrip("/")
+
+SENTIMENT_SERVICE_URL = os.environ.get("SENTIMENT_SERVICE_URL")
+if not SENTIMENT_SERVICE_URL:
+    sentiment_hostport = os.environ.get("SENTIMENT_SERVICE_HOSTPORT", "127.0.0.1:5000")
+    SENTIMENT_SERVICE_URL = f"http://{sentiment_hostport}"
+SENTIMENT_SERVICE_URL = SENTIMENT_SERVICE_URL.rstrip("/")
+
